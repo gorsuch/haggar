@@ -19,5 +19,6 @@ Usage of haggar:
   -flush=10000: how often to flush metrics, in millis
   -gen=10000: how often to gen new agents, in millis
   -jitter=10000: max amount of jitter to introduce in between agent launches
+  -max-agents=100: max number of agents to run concurrently
   -prefix="bench": prefix for metrics
 ```
