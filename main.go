@@ -117,7 +117,7 @@ func main() {
 		select {
 		case <-sigChan:
 			spawnAgents = !spawnAgents
-			log.Printf("mater: spawn_agents=%t\n", spawnAgents)
+			log.Printf("master: spawn_agents=%t\n", spawnAgents)
 		case <-time.NewTicker(time.Duration(gen) * time.Millisecond).C:
 			if curID < maxAgents {
 				if spawnAgents {
