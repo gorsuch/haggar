@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	carbon string
-	prefix string
-	flush  int
-	gen    int
-	size   int
+	carbon  string
+	prefix  string
+	flush   int
+	gen     int
+	genSize int
 )
 
 func genMetrics(batch, size int) []string {
@@ -59,7 +59,7 @@ func init() {
 	flag.StringVar(&prefix, "prefix", "bench", "prefix for metrics")
 	flag.IntVar(&flush, "flush", 10000, "how often to flush metrics, in millis")
 	flag.IntVar(&gen, "gen", 10000, "how often to gen new metrics, in millis")
-	flag.IntVar(&size, "size", 10000, "when we do gen metrics, how many should we make")
+	flag.IntVar(&genSize, "gen-size", 10000, "number of metrics to generate per batch")
 }
 
 func main() {
@@ -72,7 +72,7 @@ func main() {
 	batch := 0
 
 	// gen a batch of metric names
-	metrics = append(metrics, genMetrics(batch, size)...)
+	metrics = append(metrics, genMetrics(batch, genSize)...)
 	batch++
 
 	// initial flush
@@ -90,7 +90,7 @@ func main() {
 				log.Fatal(err)
 			}
 		case <-genTicker:
-			metrics = append(metrics, genMetrics(batch, size)...)
+			metrics = append(metrics, genMetrics(batch, genSize)...)
 			batch++
 		}
 	}
