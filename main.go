@@ -71,7 +71,7 @@ func main() {
 	metrics := make([]string, 0)
 	batch := 0
 
-	// gen a batch of metric names
+	// initial generation
 	metrics = append(metrics, genMetrics(batch, genSize)...)
 	batch++
 
