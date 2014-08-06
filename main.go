@@ -15,13 +15,13 @@ import (
 
 // config vars, to be manipulated via command line flags
 var (
-	carbon    string
-	prefix    string
-	flush     int
-	gen       int
-	agentSize int
-	jitter    int
-	maxAgents int
+	carbon        string
+	prefix        string
+	flushInterval time.Duration
+	spawnInterval time.Duration
+	metrics       int
+	jitter        time.Duration
+	agents        int
 )
 
 type Agent struct {
@@ -91,11 +91,11 @@ func launchAgent(id, n int, flush time.Duration, addr, prefix string) {
 func init() {
 	flag.StringVar(&carbon, "carbon", "localhost:2003", "address of carbon host")
 	flag.StringVar(&prefix, "prefix", "bench", "prefix for metrics")
-	flag.IntVar(&flush, "flush", 10000, "how often to flush metrics, in millis")
-	flag.IntVar(&gen, "gen", 10000, "how often to gen new agents, in millis")
-	flag.IntVar(&agentSize, "agent-size", 10000, "number of metrics for each agent to hold")
-	flag.IntVar(&jitter, "jitter", 10000, "max amount of jitter to introduce in between agent launches")
-	flag.IntVar(&maxAgents, "max-agents", 100, "max number of agents to run concurrently")
+	flag.DurationVar(&flushInterval, "flush-interval", 10*time.Second, "how often to flush metrics, in millis")
+	flag.DurationVar(&spawnInterval, "spawn-interval", 10*time.Second, "how often to gen new agents, in millis")
+	flag.IntVar(&metrics, "metrics", 10000, "number of metrics for each agent to hold")
+	flag.DurationVar(&jitter, "jitter", 10*time.Second, "max amount of jitter to introduce in between agent launches")
+	flag.IntVar(&agents, "agents", 100, "max number of agents to run concurrently")
 }
 
 func main() {
@@ -112,23 +112,19 @@ func main() {
 
 	log.Printf("master: pid %d\n", os.Getpid())
 
-	go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
-	log.Printf("agent %d: launched\n", curID)
-	curID++
-
 	for {
 		select {
 		case <-sigChan:
 			spawnAgents = !spawnAgents
 			log.Printf("master: spawn_agents=%t\n", spawnAgents)
 		case <-timer.C:
-			if curID < maxAgents {
+			if curID < agents {
 				if spawnAgents {
-					go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
+					go launchAgent(curID, agents, flushInterval, carbon, prefix)
 					log.Printf("agent %d: launched\n", curID)
 					curID++
 
-					timer = time.NewTimer(time.Duration(flush+rand.Intn(jitter)) * time.Millisecond)
+					timer = time.NewTimer(spawnInterval + (time.Duration(rand.Int63n(jitter.Nanoseconds()))))
 				}
 			}
 		}
