@@ -18,6 +18,7 @@ var (
 	gen       int
 	agentSize int
 	jitter    int
+	maxAgents int
 )
 
 type Agent struct {
@@ -91,6 +92,7 @@ func init() {
 	flag.IntVar(&gen, "gen", 10000, "how often to gen new agents, in millis")
 	flag.IntVar(&agentSize, "agent-size", 10000, "number of metrics for each agent to hold")
 	flag.IntVar(&jitter, "jitter", 10000, "max amount of jitter to introduce in between agent launches")
+	flag.IntVar(&maxAgents, "max-agents", 100, "max number of agents to run concurrently")
 }
 
 func main() {
@@ -105,12 +107,14 @@ func main() {
 	for {
 		select {
 		case <-time.NewTicker(time.Duration(gen) * time.Millisecond).C:
-			// sleep for some jitter
-			time.Sleep(time.Duration(rand.Intn(jitter)) * time.Millisecond)
+			if curID < maxAgents {
+				// sleep for some jitter
+				time.Sleep(time.Duration(rand.Intn(jitter)) * time.Millisecond)
 
-			go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
-			log.Printf("agent %d: launched\n", curID)
-			curID++
+				go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
+				log.Printf("agent %d: launched\n", curID)
+				curID++
+			}
 		}
 	}
 }
