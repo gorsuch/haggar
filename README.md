@@ -12,8 +12,8 @@ $ go get github.com/gorsuch/haggar
 ## Command-line flags
 
 ```sh
-$ hagger -h
-Usage of hagger:
+$ haggar -h
+Usage of haggar:
   -carbon="localhost:2003": address of carbon host
   -flush=10000: how often to flush metrics, in millis
   -gen=10000: how often to gen new metrics, in millis
