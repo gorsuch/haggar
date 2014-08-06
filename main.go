@@ -7,6 +7,9 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -98,7 +101,13 @@ func init() {
 func main() {
 	flag.Parse()
 
+	spawnAgents := true
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGUSR1)
+
 	curID := 0
+
+	log.Printf("master: pid %d\n", os.Getpid())
 
 	go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
 	log.Printf("agent %d: launched\n", curID)
@@ -106,14 +115,19 @@ func main() {
 
 	for {
 		select {
+		case <-sigChan:
+			spawnAgents = !spawnAgents
+			log.Printf("mater: spawn_agents=%t\n", spawnAgents)
 		case <-time.NewTicker(time.Duration(gen) * time.Millisecond).C:
 			if curID < maxAgents {
-				// sleep for some jitter
-				time.Sleep(time.Duration(rand.Intn(jitter)) * time.Millisecond)
+				if spawnAgents {
+					// sleep for some jitter
+					time.Sleep(time.Duration(rand.Intn(jitter)) * time.Millisecond)
 
-				go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
-				log.Printf("agent %d: launched\n", curID)
-				curID++
+					go launchAgent(curID, agentSize, time.Duration(flush)*time.Millisecond, carbon, prefix)
+					log.Printf("agent %d: launched\n", curID)
+					curID++
+				}
 			}
 		}
 	}
