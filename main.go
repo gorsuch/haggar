@@ -91,8 +91,8 @@ func launchAgent(id, n int, flush time.Duration, addr, prefix string) {
 func init() {
 	flag.StringVar(&carbon, "carbon", "localhost:2003", "address of carbon host")
 	flag.StringVar(&prefix, "prefix", "bench", "prefix for metrics")
-	flag.DurationVar(&flushInterval, "flush-interval", 10*time.Second, "how often to flush metrics, in millis")
-	flag.DurationVar(&spawnInterval, "spawn-interval", 10*time.Second, "how often to gen new agents, in millis")
+	flag.DurationVar(&flushInterval, "flush-interval", 10*time.Second, "how often to flush metrics")
+	flag.DurationVar(&spawnInterval, "spawn-interval", 10*time.Second, "how often to gen new agents")
 	flag.IntVar(&metrics, "metrics", 10000, "number of metrics for each agent to hold")
 	flag.DurationVar(&jitter, "jitter", 10*time.Second, "max amount of jitter to introduce in between agent launches")
 	flag.IntVar(&agents, "agents", 100, "max number of agents to run concurrently")
