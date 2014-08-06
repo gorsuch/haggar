@@ -89,7 +89,7 @@ func init() {
 	flag.StringVar(&prefix, "prefix", "bench", "prefix for metrics")
 	flag.IntVar(&flush, "flush", 10000, "how often to flush metrics, in millis")
 	flag.IntVar(&gen, "gen", 10000, "how often to gen new agents, in millis")
-	flag.IntVar(&agentSize, "gen-size", 10000, "number of metrics to generate per batch")
+	flag.IntVar(&agentSize, "agent-size", 10000, "number of metrics for each agent to hold")
 	flag.IntVar(&jitter, "jitter", 10000, "max amount of jitter to introduce in between agent launches")
 }
 
