@@ -42,6 +42,7 @@ func flushMetrics(addr, prefix string, metrics []string) error {
 		}
 	}
 
+	log.Printf("flushed %d metrics\n", len(metrics))
 	return nil
 }
 
