@@ -5,7 +5,7 @@ An experimental carbon load generation tool named after [Haggar the Witch](http:
 
 ![](http://f.cl.ly/items/050Y473L1x0j1y1s0744/Image%202014-08-07%20at%2015.08.35.png)
 
-It behaves like a swarm of [collectd](https://collectd.org/) agents firing a fixed number of metrics at a fixed interval to your [carbon-comptable](https://github.com/graphite-project/carbon) endpoint.  The number of agents increase over time until a maximum number is reached.  At any given time, you can pause the spawning of new agents by sending `SIGUSR1`.  Spawning can be resumed by doing the same.
+It behaves like a swarm of [collectd](https://collectd.org/) agents firing a fixed number of metrics at a fixed interval to your [carbon-compatible](https://github.com/graphite-project/carbon) endpoint.  The number of agents increase over time until a maximum number is reached.  At any given time, you can pause the spawning of new agents by sending `SIGUSR1`.  Spawning can be resumed by doing the same.
 
 ## Installation
 
