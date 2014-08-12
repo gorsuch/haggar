@@ -2,8 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"io"
+
 	"log"
 	"math/rand"
 	"net"
@@ -31,11 +30,11 @@ type Agent struct {
 	MetricNames   []string
 }
 
-func (a *Agent) Loop() {
+func (a *Agent) Start() {
 	for {
 		select {
 		case <-time.NewTicker(a.FlushInterval).C:
-			err := a.Flush()
+			err := a.flush()
 			if err != nil {
 				log.Printf("agent %d: %s\n", a.ID, err)
 			}
@@ -43,7 +42,7 @@ func (a *Agent) Loop() {
 	}
 }
 
-func (a *Agent) Flush() error {
+func (a *Agent) flush() error {
 	conn, err := net.Dial("tcp", a.Addr)
 	if err != nil {
 		return err
@@ -62,30 +61,15 @@ func (a *Agent) Flush() error {
 	return nil
 }
 
-// generate N metric names, prefixed with batchID for tracking
-func genMetricNames(prefix string, id, n int) []string {
-	names := make([]string, n)
-	for i := 0; i < n; i++ {
-		names[i] = fmt.Sprintf("%s.agent.%d.metrics.%d", prefix, id, i)
-	}
-
-	return names
-}
-
-// actually write the data in carbon line format
-func carbonate(w io.ReadWriteCloser, name string, value int, epoch int64) error {
-	_, err := fmt.Fprintf(w, "%s %d %d\n", name, value, epoch)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func launchAgent(id, n int, flush time.Duration, addr, prefix string) {
 	metricNames := genMetricNames(prefix, id, n)
 
-	a := &Agent{ID: id, FlushInterval: time.Duration(flush), Addr: addr, MetricNames: metricNames}
-	a.Loop()
+	a := &Agent{
+		ID:            id,
+		FlushInterval: time.Duration(flush),
+		Addr:          addr,
+		MetricNames:   metricNames}
+	a.Start()
 }
 
 func init() {
