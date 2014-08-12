@@ -1,7 +1,7 @@
 haggar
 ======
 
-An experimental [carbon](https://github.com/graphite-project/carbon) load generation tool named after [Haggar the Witch](http://alluraandkeith.homestead.com/Hagar.html), a real menace to [Voltron](http://www.voltron.com/).
+An experimental [carbon](https://github.com/graphite-project/carbon) load generation tool named after [Haggar the Witch](http://voltron.wikia.com/wiki/Witch_Haggar), a real menace to [Voltron](http://www.voltron.com/).
 
 ![](http://f.cl.ly/items/050Y473L1x0j1y1s0744/Image%202014-08-07%20at%2015.08.35.png)
 
