@@ -1,4 +1,4 @@
-haggar
+haggar [![Build Status](https://travis-ci.org/gorsuch/haggar.svg?branch=master)](https://travis-ci.org/gorsuch/haggar)
 ======
 
 An experimental [carbon](https://github.com/graphite-project/carbon) load generation tool named after [Haggar the Witch](http://www.cheezey.org/voltron/haggar.htm), a real menace to [Voltron](http://www.voltron.com/).
