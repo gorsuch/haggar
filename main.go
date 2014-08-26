@@ -104,7 +104,7 @@ func main() {
 		case <-timer.C:
 			if curID < agents {
 				if spawnAgents {
-					go launchAgent(curID, agents, flushInterval, carbon, prefix)
+					go launchAgent(curID, metrics, flushInterval, carbon, prefix)
 					log.Printf("agent %d: launched\n", curID)
 					curID++
 
