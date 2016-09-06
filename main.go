@@ -21,6 +21,7 @@ var (
 	metrics       int
 	jitter        time.Duration
 	agents        int
+	cacheConns    bool
 )
 
 type Agent struct {
@@ -28,6 +29,7 @@ type Agent struct {
 	FlushInterval time.Duration
 	Addr          string
 	MetricNames   []string
+	Connection    net.Conn
 }
 
 func (a *Agent) Start() {
@@ -43,16 +45,23 @@ func (a *Agent) Start() {
 }
 
 func (a *Agent) flush() error {
-	conn, err := net.Dial("tcp", a.Addr)
-	if err != nil {
-		return err
+	if a.Connection == nil {
+		conn, err := net.Dial("tcp", a.Addr)
+		if err != nil {
+			return err
+		}
+		a.Connection = conn
 	}
-	defer conn.Close()
+
+	if !cacheConns {
+		defer a.Connection.Close()
+	}
 
 	epoch := time.Now().Unix()
 	for _, name := range a.MetricNames {
-		err := carbonate(conn, name, rand.Intn(1000), epoch)
+		err := carbonate(a.Connection, name, rand.Intn(1000), epoch)
 		if err != nil {
+			a.Connection = nil
 			return err
 		}
 	}
@@ -80,6 +89,7 @@ func init() {
 	flag.IntVar(&metrics, "metrics", 10000, "number of metrics for each agent to hold")
 	flag.DurationVar(&jitter, "jitter", 10*time.Second, "max amount of jitter to introduce in between agent launches")
 	flag.IntVar(&agents, "agents", 100, "max number of agents to run concurrently")
+	flag.BoolVar(&cacheConns, "cache_connections", false, "if set, keep connections open between flushes (default: false)")
 }
 
 func main() {
