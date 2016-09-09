@@ -33,9 +33,10 @@ type Agent struct {
 }
 
 func (a *Agent) Start() {
+	ticker := time.NewTicker(a.FlushInterval)
 	for {
 		select {
-		case <-time.NewTicker(a.FlushInterval).C:
+		case <-ticker.C:
 			err := a.flush()
 			if err != nil {
 				log.Printf("agent %d: %s\n", a.ID, err)
