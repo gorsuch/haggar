@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"fmt"
 )
 
 // config vars, to be manipulated via command line flags
@@ -96,13 +97,19 @@ func init() {
 func main() {
 	flag.Parse()
 
+	if jitter > spawnInterval {
+		flag.PrintDefaults()
+		fmt.Print("\n\nError: jitter value must be less than or equal to spawn-interval\n\n")
+		os.Exit(1)
+	}
+
 	spawnAgents := true
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGUSR1)
 
 	// start timer at 1 milli so we launch an agent right away
 	timer := time.NewTimer(1 * time.Millisecond)
-
+	jitterDelay := time.Duration(0)
 	curID := 0
 
 	log.Printf("master: pid %d\n", os.Getpid())
@@ -118,8 +125,16 @@ func main() {
 					go launchAgent(curID, metrics, flushInterval, carbon, prefix)
 					log.Printf("agent %d: launched\n", curID)
 					curID++
+					// Subtract the last jitter val ue to keep spawnInterval a consistent baseline
+					nextLaunch := spawnInterval - jitterDelay
 
-					timer = time.NewTimer(spawnInterval + (time.Duration(rand.Int63n(jitter.Nanoseconds()))))
+					if jitter.Nanoseconds() != 0 {
+						// rand(jitter * 2) - jitter gives random +/- jitter values
+						jitterDelay = time.Duration(rand.Int63n(jitter.Nanoseconds() * 2) - jitter.Nanoseconds())
+					}
+					nextLaunch += jitterDelay
+
+					timer = time.NewTimer(nextLaunch)
 				}
 			}
 		}
