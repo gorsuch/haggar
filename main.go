@@ -56,7 +56,10 @@ func (a *Agent) flush() error {
 	}
 
 	if !cacheConns {
-		defer a.Connection.Close()
+		defer func() {
+			a.Connection.Close()
+			a.Connection = nil
+		}()
 	}
 
 	epoch := time.Now().Unix()
