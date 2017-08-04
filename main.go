@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"fmt"
 	"log"
 	"math/rand"
 	"net"
@@ -10,7 +11,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"fmt"
 )
 
 // config vars, to be manipulated via command line flags
@@ -57,8 +57,10 @@ func (a *Agent) flush() error {
 
 	if !cacheConns {
 		defer func() {
-			a.Connection.Close()
-			a.Connection = nil
+			if a.Connection != nil {
+				a.Connection.Close()
+				a.Connection = nil
+			}
 		}()
 	}
 
@@ -133,7 +135,7 @@ func main() {
 
 					if jitter.Nanoseconds() != 0 {
 						// rand(jitter * 2) - jitter gives random +/- jitter values
-						jitterDelay = time.Duration(rand.Int63n(jitter.Nanoseconds() * 2) - jitter.Nanoseconds())
+						jitterDelay = time.Duration(rand.Int63n(jitter.Nanoseconds()*2) - jitter.Nanoseconds())
 					}
 					nextLaunch += jitterDelay
 
