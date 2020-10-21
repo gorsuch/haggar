@@ -23,6 +23,7 @@ var (
 	jitter        time.Duration
 	agents        int
 	cacheConns    bool
+	debug         bool
 )
 
 type Agent struct {
@@ -71,6 +72,12 @@ func (a *Agent) flush() error {
 			a.Connection = nil
 			return err
 		}
+		if debug {
+			err = carbonate(os.Stdout, name, rand.Intn(1000), epoch)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	log.Printf("agent %d: flushed %d metrics\n", a.ID, len(a.MetricNames))
@@ -97,6 +104,7 @@ func init() {
 	flag.DurationVar(&jitter, "jitter", 10*time.Second, "max amount of jitter to introduce in between agent launches")
 	flag.IntVar(&agents, "agents", 100, "max number of agents to run concurrently")
 	flag.BoolVar(&cacheConns, "cache_connections", false, "if set, keep connections open between flushes (default: false)")
+	flag.BoolVar(&debug, "debug", false, "if set, print carbon strings for metrics to stdout (default:false)")
 }
 
 func main() {
