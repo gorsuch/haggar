@@ -24,7 +24,9 @@ $ go get github.com/gorsuch/haggar
 $ haggar -h
 Usage of haggar:
   -agents=100: max number of agents to run concurrently
+  -cache_connections: keep connections open between flushes
   -carbon="localhost:2003": address of carbon host
+  -debug: print carbon strings for metrics to stdout
   -flush-interval=10s: how often to flush metrics
   -jitter=10s: max amount of jitter to introduce in between agent launches
   -metrics=10000: number of metrics for each agent to hold
