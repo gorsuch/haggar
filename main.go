@@ -67,13 +67,14 @@ func (a *Agent) flush() error {
 
 	epoch := time.Now().Unix()
 	for _, name := range a.MetricNames {
-		err := carbonate(a.Connection, name, rand.Intn(1000), epoch)
+		val := rand.Intn(1000)
+		err := carbonate(a.Connection, name, val, epoch)
 		if err != nil {
 			a.Connection = nil
 			return err
 		}
 		if debug {
-			err = carbonate(os.Stdout, name, rand.Intn(1000), epoch)
+			err = carbonate(os.Stdout, name, val, epoch)
 			if err != nil {
 				return err
 			}
