@@ -38,13 +38,9 @@ type Agent struct {
 
 func (a *Agent) Start() {
 	ticker := time.NewTicker(a.FlushInterval)
-	for {
-		select {
-		case <-ticker.C:
-			err := a.flush()
-			if err != nil {
-				log.Printf("agent %d: %s\n", a.ID, err)
-			}
+	for range ticker.C {
+		if err := a.flush(); err != nil {
+			log.Printf("agent %d: %s\n", a.ID, err)
 		}
 	}
 }
@@ -103,10 +99,11 @@ func launchAgent(id, n int, flush, timeout time.Duration, addr, prefix string) {
 
 	a := &Agent{
 		ID:            id,
-		FlushInterval: time.Duration(flush),
+		FlushInterval: flush,
 		Addr:          addr,
 		Timeout:       timeout,
-		MetricNames:   metricNames}
+		MetricNames:   metricNames,
+	}
 	a.Start()
 }
 
@@ -165,7 +162,7 @@ func spawnLoop(ctx context.Context, toggle <-chan os.Signal, maxAgents int, spaw
 					launch(curID)
 					log.Printf("agent %d: launched\n", curID)
 					curID++
-					// Subtract the last jitter val ue to keep spawnInterval a consistent baseline
+					// Subtract the last jitter value to keep spawnInterval a consistent baseline
 					nextLaunch := spawnInterval - jitterDelay
 
 					if jitter.Nanoseconds() != 0 {
