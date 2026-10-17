@@ -11,6 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
-      - run: go vet ./...
-      - run: go test ./...
-      - run: make build
+      - run: mise run test
+      - run: mise run build

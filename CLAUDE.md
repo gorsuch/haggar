@@ -19,6 +19,8 @@ Config is held in package-level vars populated by `flag`. Agents run as goroutin
 The Go toolchain is pinned in `mise.toml`. Run `mise install` to set it up.
 
 ```sh
+mise run test       # go vet + go test (same as CI)
+mise run build      # wraps make build
 make build          # bin/haggar-$GOOS-$GOARCH (CGO disabled, -trimpath)
 make build-linux    # linux/amd64 binary, needed by the Dockerfile
 make build-docker   # builds gorsuch/haggar:latest from a scratch image
@@ -28,7 +30,7 @@ go test ./...
 
 `bin/` is gitignored.
 
-CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs vet, the tests, and `make build` on pushes to `main` and on pull requests.
+CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs `mise run test` and `mise run build` on pushes to `main` and on pull requests.
 
 Example tests for unexported functions must be named `Example_name`, not `ExampleName`, or vet fails.
 
