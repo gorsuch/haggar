@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -64,6 +65,37 @@ func TestAgentFlush(t *testing.T) {
 		if f[2] != epoch {
 			t.Fatalf("line %d: epoch %s, want %s", i, f[2], epoch)
 		}
+	}
+}
+
+// failConn is a net.Conn whose writes always fail. It records whether it was closed.
+type failConn struct {
+	net.Conn
+	closed bool
+}
+
+func (c *failConn) Write([]byte) (int, error) { return 0, errors.New("write failed") }
+func (c *failConn) Close() error              { c.closed = true; return nil }
+
+func TestAgentFlushClosesConnOnWriteError(t *testing.T) {
+	for _, cache := range []bool{false, true} {
+		t.Run(fmt.Sprintf("cache_connections=%t", cache), func(t *testing.T) {
+			cacheConns = cache
+			t.Cleanup(func() { cacheConns = false })
+
+			conn := &failConn{}
+			a := &Agent{Connection: conn, MetricNames: genMetricNames("test", 1, 10)}
+
+			if err := a.flush(); err == nil {
+				t.Fatal("flush succeeded, want write error")
+			}
+			if !conn.closed {
+				t.Error("connection was not closed after write error")
+			}
+			if a.Connection != nil {
+				t.Error("agent kept the failed connection")
+			}
+		})
 	}
 }
 

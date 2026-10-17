@@ -57,12 +57,7 @@ func (a *Agent) flush() error {
 	}
 
 	if !cacheConns {
-		defer func() {
-			if a.Connection != nil {
-				a.Connection.Close()
-				a.Connection = nil
-			}
-		}()
+		defer a.closeConn()
 	}
 
 	// buffer so a flush is a handful of large writes, not one per metric
@@ -71,17 +66,26 @@ func (a *Agent) flush() error {
 	for _, name := range a.MetricNames {
 		err := carbonate(w, name, rand.Intn(1000), epoch)
 		if err != nil {
-			a.Connection = nil
+			a.closeConn()
 			return err
 		}
 	}
 	if err := w.Flush(); err != nil {
-		a.Connection = nil
+		a.closeConn()
 		return err
 	}
 
 	log.Printf("agent %d: flushed %d metrics\n", a.ID, len(a.MetricNames))
 	return nil
+}
+
+// closeConn closes and forgets the agent's connection, if any, so the next
+// flush dials a fresh one.
+func (a *Agent) closeConn() {
+	if a.Connection != nil {
+		a.Connection.Close()
+		a.Connection = nil
+	}
 }
 
 func launchAgent(id, n int, flush time.Duration, addr, prefix string) {
