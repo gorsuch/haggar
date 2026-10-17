@@ -16,6 +16,8 @@ Config is held in package-level vars populated by `flag`. Agents run as goroutin
 
 ## Commands
 
+The Go toolchain is pinned in `mise.toml`. Run `mise install` to set it up.
+
 ```sh
 make build          # bin/haggar-$GOOS-$GOARCH (CGO disabled, -trimpath)
 make build-linux    # linux/amd64 binary, needed by the Dockerfile
