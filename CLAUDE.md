@@ -24,15 +24,16 @@ The Go toolchain is pinned in `mise.toml`. Run `mise install` to set it up.
 mise run test       # go vet + go test (same as CI)
 mise run build      # wraps make build
 make build          # bin/haggar-$GOOS-$GOARCH (CGO disabled, -trimpath)
-make build-linux    # linux/amd64 binary, needed by the Dockerfile
-make build-docker   # builds gorsuch/haggar:latest from a scratch image
+make build-linux    # linux/amd64 binary
+make build-docker   # gorsuch/haggar:latest for the local platform (compiles inside Docker)
+make push-docker    # multi-arch (linux/amd64, linux/arm64) build and push via buildx
 go vet ./...
 go test ./...
 ```
 
 `bin/` is gitignored.
 
-CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs `mise run test` and `mise run build` on pushes to `main` and on pull requests.
+CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs `mise run test` and `mise run build` on pushes to `main` and on pull requests. A separate `docker` job builds the image for linux/amd64 and linux/arm64 without pushing.
 
 Example tests for unexported functions must be named `Example_name`, not `ExampleName`, or vet fails.
 
@@ -40,6 +41,7 @@ Example tests for unexported functions must be named `Example_name`, not `Exampl
 
 - Flags use hyphens (`-flush-interval`). The exception is `-cache_connections`; keep it for compatibility.
 - When adding or changing a flag, update the `haggar -h` output in the README.
+- When upgrading Go, update `mise.toml`, the `golang:` image tag in the `Dockerfile`, and possibly the `go` line in `go.mod`.
 - The default branch is `main`.
 - Log lines are prefixed with `master:` for the spawn loop and `agent N:` for agents. This "master" means the process role, not the git branch.
 - Keep it dependency-free and stdlib-only unless there's a strong reason not to.
