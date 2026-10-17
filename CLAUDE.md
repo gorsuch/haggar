@@ -35,6 +35,15 @@ go test ./...
 
 CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs `mise run test` and `mise run build` on pushes to `main` and on pull requests. A separate `docker` job builds the image for linux/amd64 and linux/arm64 without pushing.
 
+## Releasing
+
+Push a `vX.Y.Z` tag on `main`. `.github/workflows/release.yml` then:
+- runs the tests
+- builds the linux and darwin binaries (amd64 and arm64) plus `SHA256SUMS`, and attaches them to the GitHub release
+- pushes a multi-arch image to `ghcr.io/gorsuch/haggar`, tagged `X.Y.Z`, `X.Y` and `latest`
+
+If the release already exists, for example because it was created in the GitHub UI with handwritten notes, the workflow attaches the binaries to it. Otherwise it creates the release with generated notes. Tags containing `-` (like `v1.2.0-rc.1`) become pre-releases, and their image gets only the exact version tag. Pull requests that touch release inputs run the same builds as a dry run, without publishing.
+
 Example tests for unexported functions must be named `Example_name`, not `ExampleName`, or vet fails.
 
 ## Conventions

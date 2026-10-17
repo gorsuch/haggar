@@ -15,6 +15,14 @@ It behaves like a swarm of [collectd](https://collectd.org/) agents firing a fix
 $ go install github.com/gorsuch/haggar@latest
 ```
 
+Prebuilt binaries for Linux and macOS (amd64 and arm64) are attached to each [release](https://github.com/gorsuch/haggar/releases).
+
+Or run it with Docker:
+
+```sh
+$ docker run --rm ghcr.io/gorsuch/haggar -carbon=graphite.example.com:2003
+```
+
 ## Usage
 
 ```sh
