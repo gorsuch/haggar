@@ -36,13 +36,10 @@ CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise
 
 Example tests for unexported functions must be named `Example_name`, not `ExampleName`, or vet fails.
 
-## Known issues
-
-- The README's `go get` install instruction is outdated. Use `go install github.com/gorsuch/haggar@latest`.
-- The README flag list omits `-cache_connections`. Note the underscore: the other flags use hyphens.
-
 ## Conventions
 
+- Flags use hyphens (`-flush-interval`). The exception is `-cache_connections`; keep it for compatibility.
+- When adding or changing a flag, update the `haggar -h` output in the README.
 - The default branch is `main`.
 - Log lines are prefixed with `master:` for the spawn loop and `agent N:` for agents. This "master" means the process role, not the git branch.
 - Keep it dependency-free and stdlib-only unless there's a strong reason not to.
