@@ -140,6 +140,9 @@ func main() {
 					nextLaunch += jitterDelay
 
 					timer = time.NewTimer(nextLaunch)
+				} else {
+					// keep the timer running while paused so spawning picks back up on resume
+					timer = time.NewTimer(spawnInterval)
 				}
 			}
 		}
