@@ -1,0 +1,10 @@
+[tools]
+go = "1.27.2"
+
+[tasks.test]
+description = "Run go vet and tests"
+run = ["go vet ./...", "go test ./..."]
+
+[tasks.build]
+description = "Build the binary into bin/"
+run = "make build"
