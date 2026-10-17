@@ -30,6 +30,7 @@ Usage of haggar:
   -metrics=10000: number of metrics for each agent to hold
   -prefix="haggar": prefix for metrics
   -spawn-interval=10s: how often to gen new agents
+  -timeout=5s: max time to connect to carbon, and to write each flush (0 = no timeout)
 ```
 
 ## Credits

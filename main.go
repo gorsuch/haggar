@@ -24,6 +24,7 @@ var (
 	jitter        time.Duration
 	agents        int
 	cacheConns    bool
+	timeout       time.Duration
 )
 
 type Agent struct {
@@ -32,6 +33,7 @@ type Agent struct {
 	Addr          string
 	MetricNames   []string
 	Connection    net.Conn
+	Timeout       time.Duration
 }
 
 func (a *Agent) Start() {
@@ -49,7 +51,7 @@ func (a *Agent) Start() {
 
 func (a *Agent) flush() error {
 	if a.Connection == nil {
-		conn, err := net.Dial("tcp", a.Addr)
+		conn, err := net.DialTimeout("tcp", a.Addr, a.Timeout)
 		if err != nil {
 			return err
 		}
@@ -58,6 +60,14 @@ func (a *Agent) flush() error {
 
 	if !cacheConns {
 		defer a.closeConn()
+	}
+
+	// bound the whole flush so a stalled carbon can't block the agent forever
+	if a.Timeout > 0 {
+		if err := a.Connection.SetWriteDeadline(time.Now().Add(a.Timeout)); err != nil {
+			a.closeConn()
+			return err
+		}
 	}
 
 	// buffer so a flush is a handful of large writes, not one per metric
@@ -88,13 +98,14 @@ func (a *Agent) closeConn() {
 	}
 }
 
-func launchAgent(id, n int, flush time.Duration, addr, prefix string) {
+func launchAgent(id, n int, flush, timeout time.Duration, addr, prefix string) {
 	metricNames := genMetricNames(prefix, id, n)
 
 	a := &Agent{
 		ID:            id,
 		FlushInterval: time.Duration(flush),
 		Addr:          addr,
+		Timeout:       timeout,
 		MetricNames:   metricNames}
 	a.Start()
 }
@@ -108,6 +119,7 @@ func init() {
 	flag.DurationVar(&jitter, "jitter", 10*time.Second, "max amount of jitter to introduce in between agent launches")
 	flag.IntVar(&agents, "agents", 100, "max number of agents to run concurrently")
 	flag.BoolVar(&cacheConns, "cache_connections", false, "if set, keep connections open between flushes (default: false)")
+	flag.DurationVar(&timeout, "timeout", 5*time.Second, "max time to connect to carbon, and to write each flush (0 = no timeout)")
 }
 
 func main() {
@@ -125,7 +137,7 @@ func main() {
 	log.Printf("master: pid %d\n", os.Getpid())
 
 	spawnLoop(context.Background(), sigChan, agents, spawnInterval, jitter, func(id int) {
-		go launchAgent(id, metrics, flushInterval, carbon, prefix)
+		go launchAgent(id, metrics, flushInterval, timeout, carbon, prefix)
 	})
 }
 

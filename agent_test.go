@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 // listen starts a TCP listener on a random local port, closed at test end.
@@ -96,6 +97,37 @@ func TestAgentFlushClosesConnOnWriteError(t *testing.T) {
 				t.Error("agent kept the failed connection")
 			}
 		})
+	}
+}
+
+func TestAgentFlushTimesOutOnStalledServer(t *testing.T) {
+	ln := listen(t)
+	// accept the connection but never read from it, so writes stall once
+	// the socket buffers fill
+	go func() {
+		conn, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		t.Cleanup(func() { conn.Close() })
+	}()
+
+	a := &Agent{
+		Addr:        ln.Addr().String(),
+		Timeout:     200 * time.Millisecond,
+		MetricNames: genMetricNames("test", 1, 500000), // ~20MB, far more than socket buffers hold
+	}
+
+	errc := make(chan error, 1)
+	go func() { errc <- a.flush() }()
+
+	select {
+	case err := <-errc:
+		if !errors.Is(err, os.ErrDeadlineExceeded) {
+			t.Fatalf("flush error = %v, want deadline exceeded", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("flush still blocked after 10s; write timeout not applied")
 	}
 }
 
