@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -64,13 +65,19 @@ func (a *Agent) flush() error {
 		}()
 	}
 
+	// buffer so a flush is a handful of large writes, not one per metric
+	w := bufio.NewWriter(a.Connection)
 	epoch := time.Now().Unix()
 	for _, name := range a.MetricNames {
-		err := carbonate(a.Connection, name, rand.Intn(1000), epoch)
+		err := carbonate(w, name, rand.Intn(1000), epoch)
 		if err != nil {
 			a.Connection = nil
 			return err
 		}
+	}
+	if err := w.Flush(); err != nil {
+		a.Connection = nil
+		return err
 	}
 
 	log.Printf("agent %d: flushed %d metrics\n", a.ID, len(a.MetricNames))

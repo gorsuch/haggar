@@ -11,6 +11,7 @@ It's a single `package main` with no third-party dependencies (standard library 
 - `main.go`: flags (set in `init()`), the `Agent` type with its flush loop, and `spawnLoop` (spawn timing, jitter, `SIGUSR1` pause/resume). `main()` just wires `spawnLoop` to the real signal channel and `launchAgent`.
 - `util.go`: pure helpers `genMetricNames` and `carbonate` (writes one carbon line)
 - `util_test.go`: example-style tests (`// Output:` blocks)
+- `agent_test.go`: `Agent.flush` tests against a local TCP listener, plus `BenchmarkAgentFlush`
 - `main_test.go`: `spawnLoop` tests. They run under `testing/synctest`, so timers use a fake clock and finish instantly. Use the same approach for any new timing-dependent tests.
 
 Config is held in package-level vars populated by `flag`. Agents run as goroutines that never stop. The process runs until it is killed.
