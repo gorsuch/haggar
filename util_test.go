@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func ExampleGenMetricNames() {
+func Example_genMetricNames() {
 	names := genMetricNames("test", 1, 2)
 	for _, s := range names {
 		fmt.Fprintf(os.Stdout, "%s\n", s)
@@ -16,7 +16,7 @@ func ExampleGenMetricNames() {
 	// test.agent.1.metrics.1
 }
 
-func ExampleCarbonate() {
+func Example_carbonate() {
 	epoch := int64(1407850160)
 	carbonate(os.Stdout, "test.metric.1", 100, epoch)
 	// Output:

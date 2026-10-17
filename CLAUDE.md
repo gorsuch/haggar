@@ -22,15 +22,18 @@ The Go toolchain is pinned in `mise.toml`. Run `mise install` to set it up.
 make build          # bin/haggar-$GOOS-$GOARCH (CGO disabled, -trimpath)
 make build-linux    # linux/amd64 binary, needed by the Dockerfile
 make build-docker   # builds gorsuch/haggar:latest from a scratch image
-go test -vet=off ./...
+go vet ./...
+go test ./...
 ```
 
 `bin/` is gitignored.
 
+CI is GitHub Actions (`.github/workflows/test.yml`). It installs Go through mise, then runs vet, the tests, and `make build` on pushes to `main` and on pull requests.
+
+Example tests for unexported functions must be named `Example_name`, not `ExampleName`, or vet fails.
+
 ## Known issues
 
-- Plain `go test ./...` fails on modern Go. The vet step rejects `ExampleGenMetricNames` and `ExampleCarbonate` because they name unexported identifiers. Renaming them to `Example_genMetricNames` and `Example_carbonate` fixes it. Until then, use `-vet=off`.
-- `.travis.yml` (Go 1.3) and the Travis badge in the README are dead. CI is not set up.
 - The README's `go get` install instruction is outdated. Use `go install github.com/gorsuch/haggar@latest`.
 - The README flag list omits `-cache_connections`. Note the underscore: the other flags use hyphens.
 
