@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"flag"
-
 	"fmt"
 	"log"
 	"math/rand"
@@ -108,26 +108,38 @@ func main() {
 		os.Exit(1)
 	}
 
-	spawnAgents := true
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGUSR1)
+
+	log.Printf("master: pid %d\n", os.Getpid())
+
+	spawnLoop(context.Background(), sigChan, agents, spawnInterval, jitter, func(id int) {
+		go launchAgent(id, metrics, flushInterval, carbon, prefix)
+	})
+}
+
+// spawnLoop calls launch once per spawnInterval (+/- jitter) until maxAgents
+// have been launched. Each value received on toggle pauses or resumes spawning.
+// It returns when ctx is done.
+func spawnLoop(ctx context.Context, toggle <-chan os.Signal, maxAgents int, spawnInterval, jitter time.Duration, launch func(id int)) {
+	spawnAgents := true
 
 	// start timer at 1 milli so we launch an agent right away
 	timer := time.NewTimer(1 * time.Millisecond)
 	jitterDelay := time.Duration(0)
 	curID := 0
 
-	log.Printf("master: pid %d\n", os.Getpid())
-
 	for {
 		select {
-		case <-sigChan:
+		case <-ctx.Done():
+			return
+		case <-toggle:
 			spawnAgents = !spawnAgents
 			log.Printf("master: spawn_agents=%t\n", spawnAgents)
 		case <-timer.C:
-			if curID < agents {
+			if curID < maxAgents {
 				if spawnAgents {
-					go launchAgent(curID, metrics, flushInterval, carbon, prefix)
+					launch(curID)
 					log.Printf("agent %d: launched\n", curID)
 					curID++
 					// Subtract the last jitter val ue to keep spawnInterval a consistent baseline
@@ -140,6 +152,9 @@ func main() {
 					nextLaunch += jitterDelay
 
 					timer = time.NewTimer(nextLaunch)
+				} else {
+					// keep the timer running while paused so spawning picks back up on resume
+					timer = time.NewTimer(spawnInterval)
 				}
 			}
 		}
